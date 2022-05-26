@@ -7,13 +7,14 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
-#define PI 3,1415926535
+
 
 typedef struct s_data{
 
 	int		**map;
 	int		length;
 	int		width;
+	int		tile_size;
 	char	*name;
 	void	*img;
 	char	*addr;
@@ -22,13 +23,19 @@ typedef struct s_data{
 	int		endian;
 	void	*mlx;
 	void	*win;
-	float	pos_x;
-	float	pos_y;
+	float	px;
+	float	py;
+	float	pa;
+	float	pdx;
+	float	pdy;
 	float	current_x;
 	float	current_y;
 	float	next_x;
 	float	next_y;
-	float	angle;
+	float	tile_x;
+	float	tile_y;
+	int		step_x;
+	int		step_y;
 	int		size_c;
 	int		color_angle;
 }				t_data;
