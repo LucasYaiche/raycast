@@ -6,7 +6,7 @@
 /*   By: lyaiche <lyaiche@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 16:00:08 by lyaiche           #+#    #+#             */
-/*   Updated: 2022/05/26 15:50:07 by lyaiche          ###   ########.fr       */
+/*   Updated: 2022/05/26 16:23:47 by lyaiche          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,66 +127,21 @@ void	draw_line(float current_x, float current_y, float next_x, float next_y, int
 
 void	draw3drays(t_data *data)
 {
-	// int	r, mx, my, mp, dof;
-	// float rx, ry, ra, x, y;
-
-	// ra=data->pa; 
-	// for(r=0; r<1;r++)
-	// {
-	// 	dof=0;
-	// 	float atan = -1/tan(ra);
-	// 	atan = 1/atan;
-	// 	if (ra > M_PI)
-	// 	{
-	// 		ry=(((int)data->py>>6)<<6)-0.0001;
-	// 		rx=(data->py-ry)*atan+data->px;
-	// 		y=-64;
-	// 		x=-y*atan;
-	// 	}
-	// 	if (ra < M_PI)
-	// 	{
-	// 		ry=(((int)data->py>>6)<<6)+64;
-	// 		rx=(data->py-ry)*atan+data->px;
-	// 		y=64;
-	// 		x=-y*atan;
-	// 	}
-	// 	if (ra==0 || ra==M_PI)
-	// 	{
-	// 		rx=data->px;
-	// 		ry=data->py;
-	// 		dof=8;
-	// 	}
-	// 	while(dof<8)
-	// 	{
-	// 		mx=(int)(rx)>>6;
-	// 		my=(int)(ry)>>6;
-	// 		mp=my*data->length+mx;
-	// 		if(mp<data->length*data->width && map[mp]==1)
-	// 		{
-	// 			dof=8;
-	// 		}
-	// 		else
-	// 		{
-	// 			rx+=x;
-	// 			ry+=y;
-	// 			dof+=1;
-	// 		}
-	// 	}
-	// 	draw_line(data->px, data->py, rx, ry, 0x3FFF00,data);
-	// }
 	int	r, mx, my, mp, dof, found;
-	float step_x, step_y, raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, lenght_x, lenght_y, distance, maxdistance;
-
-	ray_step_x = sqrt(1 + ((data->pdy / data->pdx) * (data->pdy / data->pdx)));
-	ray_step_y = sqrt(1 + ((data->pdx / data->pdy) * (data->pdx / data->pdy)));
-	raystart_x = data->tile_x;
-	raystart_y = data->tile_y;
-	raymap_x = (int)data->tile_x;
-	raymap_y = (int)data->tile_y;
+	float step_x, step_y, raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, lenght_x, lenght_y, distance, maxdistance, ra, dirx, diry;
 	
-	for(r=0; r<1;r++)
+	for(r=0; r<60;r++)
 	{
-		if (data->pdx < 0)
+		ra = FixAng(data->pa + 30 - r); 
+		dirx = cos(degToRad(ra));
+		diry = -sin(degToRad(ra));
+		ray_step_x = sqrt(1 + ((diry / dirx) * (diry / dirx)));
+		ray_step_y = sqrt(1 + ((dirx / diry) * (dirx / diry)));
+		raystart_x = data->tile_x;
+		raystart_y = data->tile_y;
+		raymap_x = (int)data->tile_x;
+		raymap_y = (int)data->tile_y;
+		if (dirx < 0)
 		{
 			step_x = -1;
 			lenght_x = (raystart_x - raymap_x) * ray_step_x;
@@ -196,7 +151,7 @@ void	draw3drays(t_data *data)
 			step_x = 1;
 			lenght_x = ((raymap_x + 1) - raystart_x) * ray_step_x;
 		}
-		if (data->pdy < 0)
+		if (diry < 0)
 		{
 			step_y = -1;
 			lenght_y = (raystart_y - raymap_y) * ray_step_y;
@@ -234,8 +189,8 @@ void	draw3drays(t_data *data)
 			}
 		}
 		// printf("%d\n", found);
-		printf("%f\n%f\n", raystart_x * data->tile_size + data->pdx*distance, distance);
-		draw_line(data->px, data->py, raystart_x * data->tile_size + (data->pdx * distance * data->tile_size), raystart_y* data->tile_size + (data->pdy * distance * data->tile_size), 0x3FFF00,data);
+		// printf("%f\n%f\n", raystart_x * data->tile_size + dirx*distance, distance);
+		draw_line(data->px, data->py, raystart_x * data->tile_size + (dirx * distance * data->tile_size), raystart_y* data->tile_size + (diry * distance * data->tile_size), 0x3FFF00,data);
 	}
 }
 
@@ -275,13 +230,13 @@ int	key_hook(int keycode, t_data *data)
 	if (keycode == 53)
 		end(data);
 	if (keycode == 0)
-		{ data->px+=data->pdy; data->px+=data->pdx;}
+		{ data->px+=data->pdy * 5; data->px+=data->pdx * 5;}
 	if (keycode == 2)
-		{ data->px-=data->pdy; data->px-=data->pdx;}
+		{ data->px-=data->pdy * 5; data->px-=data->pdx * 5;}
 	if (keycode == 13)
-		{ data->px+=data->pdx; data->py+=data->pdy;}
+		{ data->px+=data->pdx * 5; data->py+=data->pdy * 5;}
 	if (keycode == 1)
-		{ data->px-=data->pdx; data->py-=data->pdy;}
+		{ data->px-=data->pdx * 5; data->py-=data->pdy * 5;}
 	if (keycode == 123)
 	{
 		data->pa+=5; 

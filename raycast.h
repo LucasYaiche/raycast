@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
-
+#define DR 0.0174533
 
 typedef struct s_data{
 
