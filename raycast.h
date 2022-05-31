@@ -36,6 +36,7 @@ typedef struct s_data{
 	float	tile_y;
 	int		step_x;
 	int		step_y;
+	float 	distance;
 	int		size_c;
 	int		color_angle;
 }				t_data;

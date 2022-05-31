@@ -6,7 +6,7 @@
 /*   By: lyaiche <lyaiche@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 16:00:08 by lyaiche           #+#    #+#             */
-/*   Updated: 2022/05/26 16:23:47 by lyaiche          ###   ########.fr       */
+/*   Updated: 2022/05/31 17:38:07 by lyaiche          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ float degToRad(int a)
 	return a*M_PI/180.0;
 }
 
-int FixAng(int a)
+float FixAng(float a)
 {
 	if(a>359)
 	{ 
@@ -125,22 +125,38 @@ void	draw_line(float current_x, float current_y, float next_x, float next_y, int
 	}
 }
 
+void	vertline(int x, int draw_start, int draw_end, int color, t_data *data)
+{
+	int y;
+	y = draw_start;
+	while  (y < draw_end)
+	{
+			put_pixel(x, y, color, data);
+			y++;
+	}
+}
+
 void	draw3drays(t_data *data)
 {
-	int	r, mx, my, mp, dof, found;
-	float step_x, step_y, raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, lenght_x, lenght_y, distance, maxdistance, ra, dirx, diry;
+	int	r, mx, my, mp, dof, found, line_height, draw_start, draw_end, side, color;
+	float step_x, step_y, raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, 
+			lenght_x, lenght_y, distance, maxdistance, ra, dirx, diry, walldist, tick;
 	
-	for(r=0; r<60;r++)
+	ra = FixAng(data->pa + 45);
+	tick =  60.0 / 1920.0;
+	// printf("%l\n", tick);
+	for(r=0; r<1920;r++)
 	{
-		ra = FixAng(data->pa + 30 - r); 
+		
+		color = 0x6a2633;
 		dirx = cos(degToRad(ra));
 		diry = -sin(degToRad(ra));
 		ray_step_x = sqrt(1 + ((diry / dirx) * (diry / dirx)));
 		ray_step_y = sqrt(1 + ((dirx / diry) * (dirx / diry)));
-		raystart_x = data->tile_x;
-		raystart_y = data->tile_y;
-		raymap_x = (int)data->tile_x;
-		raymap_y = (int)data->tile_y;
+		raystart_x = data->px;
+		raystart_y = data->py;
+		raymap_x = (int)data->px;
+		raymap_y = (int)data->py;
 		if (dirx < 0)
 		{
 			step_x = -1;
@@ -164,7 +180,6 @@ void	draw3drays(t_data *data)
 		distance = 0;
 		maxdistance = 8;
 		found = 0;
-			printf("%f\n%f\n", raymap_x, raymap_y);
 		while(found==0 && distance <  maxdistance)
 		{
 			if (lenght_x < lenght_y)
@@ -172,25 +187,43 @@ void	draw3drays(t_data *data)
 				raymap_x += step_x;
 				distance = lenght_x;
 				lenght_x += ray_step_x;
+				side = 0;
 			}
 			else
 			{
 				raymap_y += step_y;
 				distance = lenght_y;
 				lenght_y += ray_step_y;
+				side = 1;
 			}
 			if (raymap_x >= 0 && raymap_x < data->length && raymap_y >= 0 && raymap_y < data->width)
 			{
 				if (map[(int)raymap_y * data->length + (int)raymap_x] == 1)
 				{
-					printf("salut\n");
 					found = 1;
 				}
 			}
 		}
-		// printf("%d\n", found);
-		// printf("%f\n%f\n", raystart_x * data->tile_size + dirx*distance, distance);
-		draw_line(data->px, data->py, raystart_x * data->tile_size + (dirx * distance * data->tile_size), raystart_y* data->tile_size + (diry * distance * data->tile_size), 0x3FFF00,data);
+		// draw_line(data->px, data->py, raystart_x * data->tile_size + (dirx * distance * data->tile_size), raystart_y* data->tile_size + (diry * distance * data->tile_size), 0x3FFF00,data);
+		if (side == 0)
+			walldist = lenght_x - ray_step_x;
+		else
+			walldist = lenght_y - ray_step_y;
+		walldist *= cos(degToRad(data->pa - ra));
+		line_height = (int) (1080 / walldist);
+		
+		draw_start = -line_height / 2 + 1080 / 2;
+		if (draw_start < 0)
+			draw_start = 0;
+
+		draw_end = line_height / 2 + 1080 / 2;
+		if (draw_end >= 1080)
+			draw_end = 1080 - 1;
+
+		if (side == 1)
+			color = 0xff0000 ;
+		vertline(r, draw_start, draw_end, color, data);
+		ra = FixAng(ra - tick);
 	}
 }
 
@@ -206,8 +239,8 @@ void	launch(t_data *data)
 	data->img = mlx_new_image(data->mlx, 1920, 1080);
 	data->addr = mlx_get_data_addr(data->img, &data->bits_per_pixel,
 			&data->line_bytes, &data->endian);
-	draw_map(data);
-	draw_player(data);
+	// draw_map(data);
+	// draw_player(data);
 	draw3drays(data);
 	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
 }
@@ -227,31 +260,48 @@ void tile(t_data *data)
 
 int	key_hook(int keycode, t_data *data)
 {
+	float old_x, old_y;
+	
+	old_x = data->px;
+	old_y = data->py;
 	if (keycode == 53)
 		end(data);
 	if (keycode == 0)
-		{ data->px+=data->pdy * 5; data->px+=data->pdx * 5;}
+		{ 
+				data->py+=data->pdy * 0.4 ; data->px-=data->pdx * 0.4 ;
+		}
 	if (keycode == 2)
-		{ data->px-=data->pdy * 5; data->px-=data->pdx * 5;}
+		{ 
+				data->py-=data->pdy * 0.4 ; data->px-=data->pdx * 0.4 ;
+		}
 	if (keycode == 13)
-		{ data->px+=data->pdx * 5; data->py+=data->pdy * 5;}
+		{ 
+				data->px+=data->pdx * 0.4 ; data->py+=data->pdy * 0.4 ;
+		}
 	if (keycode == 1)
-		{ data->px-=data->pdx * 5; data->py-=data->pdy * 5;}
+		{ 
+				data->px-=data->pdx * 0.4 ; data->py-=data->pdy * 0.4 ;
+		}
 	if (keycode == 123)
 	{
-		data->pa+=5; 
+		data->pa+=4; 
 		data->pa = FixAng(data->pa);
 		data->pdx=cos(degToRad(data->pa));
 		data->pdy=-sin(degToRad(data->pa));
 	}
 	if (keycode == 124)
 	{ 
-		data->pa -= 5; 
+		data->pa -= 4; 
 		data->pa = FixAng(data->pa);
 		data->pdx = cos(degToRad(data->pa));
 		data->pdy = -sin(degToRad(data->pa));
 	}
 	tile(data);
+	if (map[(int)data->py * data->length + (int)data->px] == 1)
+	{
+		data->px = old_x;
+		data->py = old_y;
+	}
 	mlx_clear_window(data->mlx, data->win);
 	launch(data);
 	return (0);
@@ -267,8 +317,8 @@ int main(void)
 	data->width = 8;
 	data->length = 8;
 	data->tile_size = 100;
-	data->px = 120;
-	data->py = 120;
+	data->px = 1.5;
+	data->py = 1.5;
 	data->pa = 90;
 	data->pdx = cos(degToRad(data->pa));
 	data->pdy = -sin(degToRad(data->pa));
