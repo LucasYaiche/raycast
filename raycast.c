@@ -6,7 +6,7 @@
 /*   By: lyaiche <lyaiche@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 16:00:08 by lyaiche           #+#    #+#             */
-/*   Updated: 2022/05/31 17:38:07 by lyaiche          ###   ########.fr       */
+/*   Updated: 2022/06/01 20:08:21 by lyaiche          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ float degToRad(int a)
 
 float FixAng(float a)
 {
-	if(a>359)
+	if (a>359)
 	{ 
 		a-=360;
 	}
@@ -40,6 +40,15 @@ float FixAng(float a)
 	} 
 	return a;
 }
+
+int	end(t_data *data)
+{
+	mlx_destroy_window(data->mlx, data->win);
+	exit(0);
+	return (0);
+}
+
+
 
 void	put_pixel(float x, float y, int color, t_data *data)
 {
@@ -68,13 +77,13 @@ void	draw_cube(float current_x, float current_y, int size, t_data *data, int col
 
 void	draw_map(t_data *data)
 {
-	int x,y;
-	float current_x, current_y;
+	int		x,y;
+	float	current_x, current_y;
 
 	current_x = 0;
 	current_y = 0;
 	y = -1;
-	while(++y < data->width)
+	while (++y < data->width)
 	{
 		x = -1;
 		while(++x < data->length)
@@ -127,27 +136,34 @@ void	draw_line(float current_x, float current_y, float next_x, float next_y, int
 
 void	vertline(int x, int draw_start, int draw_end, int color, t_data *data)
 {
-	int y;
+	int y,i;
+
+	i = -1;
 	y = draw_start;
+	while(++i < draw_start)
+		put_pixel(x, i, 0xBAE5F4, data);
 	while  (y < draw_end)
 	{
-			put_pixel(x, y, color, data);
-			y++;
+		put_pixel(x, y, color, data);
+		y++;
+	}
+	while (y < 1080)
+	{
+		put_pixel(x, y, 0x5b5b5b, data);
+		y++;
 	}
 }
 
 void	draw3drays(t_data *data)
 {
-	int	r, mx, my, mp, dof, found, line_height, draw_start, draw_end, side, color;
-	float step_x, step_y, raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, 
+	int	r, mx, my, mp, dof, found, line_height, draw_start, draw_end, side, color, step_x, step_y;
+	float  raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, 
 			lenght_x, lenght_y, distance, maxdistance, ra, dirx, diry, walldist, tick;
 	
-	ra = FixAng(data->pa + 45);
+	ra = FixAng(data->pa + 30);
 	tick =  60.0 / 1920.0;
-	// printf("%l\n", tick);
-	for(r=0; r<1920;r++)
+	for(r=0; r<1919;r++)
 	{
-		
 		color = 0x6a2633;
 		dirx = cos(degToRad(ra));
 		diry = -sin(degToRad(ra));
@@ -165,7 +181,7 @@ void	draw3drays(t_data *data)
 		else
 		{
 			step_x = 1;
-			lenght_x = ((raymap_x + 1) - raystart_x) * ray_step_x;
+			lenght_x = ((raymap_x + 1.0) - raystart_x) * ray_step_x;
 		}
 		if (diry < 0)
 		{
@@ -175,7 +191,7 @@ void	draw3drays(t_data *data)
 		else
 		{
 			step_y = 1;
-			lenght_y = ((raymap_y + 1) - raystart_y) * ray_step_y;
+			lenght_y = ((raymap_y + 1.0) - raystart_y) * ray_step_y;
 		}
 		distance = 0;
 		maxdistance = 8;
@@ -185,23 +201,18 @@ void	draw3drays(t_data *data)
 			if (lenght_x < lenght_y)
 			{
 				raymap_x += step_x;
-				distance = lenght_x;
 				lenght_x += ray_step_x;
 				side = 0;
 			}
 			else
 			{
 				raymap_y += step_y;
-				distance = lenght_y;
 				lenght_y += ray_step_y;
 				side = 1;
 			}
-			if (raymap_x >= 0 && raymap_x < data->length && raymap_y >= 0 && raymap_y < data->width)
+			if (map[(int)raymap_y * data->length + (int)raymap_x] == 1)
 			{
-				if (map[(int)raymap_y * data->length + (int)raymap_x] == 1)
-				{
-					found = 1;
-				}
+				found = 1;
 			}
 		}
 		// draw_line(data->px, data->py, raystart_x * data->tile_size + (dirx * distance * data->tile_size), raystart_y* data->tile_size + (diry * distance * data->tile_size), 0x3FFF00,data);
@@ -233,7 +244,7 @@ void	draw_player(t_data *data)
 	draw_line(data->px, data->py, data->px+data->pdx*15, data->py+data->pdy*15,0xffffff, data);
 }
 
-void	launch(t_data *data)
+int	launch(t_data *data)
 {
 	
 	data->img = mlx_new_image(data->mlx, 1920, 1080);
@@ -243,19 +254,7 @@ void	launch(t_data *data)
 	// draw_player(data);
 	draw3drays(data);
 	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
-}
-
-int	end(t_data *data)
-{
-	mlx_destroy_window(data->mlx, data->win);
-	exit(0);
 	return (0);
-}
-
-void tile(t_data *data)
-{
-	data->tile_x = data->px / data->tile_size;
-	data->tile_y = data->py / data->tile_size;
 }
 
 int	key_hook(int keycode, t_data *data)
@@ -296,7 +295,6 @@ int	key_hook(int keycode, t_data *data)
 		data->pdx = cos(degToRad(data->pa));
 		data->pdy = -sin(degToRad(data->pa));
 	}
-	tile(data);
 	if (map[(int)data->py * data->length + (int)data->px] == 1)
 	{
 		data->px = old_x;
@@ -306,7 +304,6 @@ int	key_hook(int keycode, t_data *data)
 	launch(data);
 	return (0);
 }
-
 
 
 int main(void)
@@ -322,9 +319,7 @@ int main(void)
 	data->pa = 90;
 	data->pdx = cos(degToRad(data->pa));
 	data->pdy = -sin(degToRad(data->pa));
-	tile(data);
 	data->win = mlx_new_window(data->mlx, 1920, 1080, "raycast");
-	launch(data);
 	mlx_do_key_autorepeaton(data->mlx);
 	mlx_hook(data->win, 2, 1L << 0, key_hook, data);
 	mlx_hook(data->win, 17, 1L << 5, end, data);
