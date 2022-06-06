@@ -6,7 +6,7 @@
 /*   By: lyaiche <lyaiche@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 16:00:08 by lyaiche           #+#    #+#             */
-/*   Updated: 2022/06/01 20:08:21 by lyaiche          ###   ########.fr       */
+/*   Updated: 2022/06/06 17:46:00 by lyaiche          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 		1,1,1,1,1,1,1,1,
 	};
 
-float degToRad(int a)
+float degToRad(float a)
 { 
 	return a*M_PI/180.0;
 }
@@ -32,11 +32,11 @@ float FixAng(float a)
 {
 	if (a>359)
 	{ 
-		a-=360;
+		a-=360.0;
 	}
 	if(a<0)
 	{ 
-		a+=360;
+		a+=360.0;
 	} 
 	return a;
 }
@@ -160,15 +160,15 @@ void	draw3drays(t_data *data)
 	float  raymap_x, raymap_y, ray_step_x, ray_step_y, raystart_x, raystart_y, 
 			lenght_x, lenght_y, distance, maxdistance, ra, dirx, diry, walldist, tick;
 	
-	ra = FixAng(data->pa + 30);
+	ra = FixAng(data->pa + 30.0);
 	tick =  60.0 / 1920.0;
 	for(r=0; r<1919;r++)
 	{
 		color = 0x6a2633;
 		dirx = cos(degToRad(ra));
 		diry = -sin(degToRad(ra));
-		ray_step_x = sqrt(1 + ((diry / dirx) * (diry / dirx)));
-		ray_step_y = sqrt(1 + ((dirx / diry) * (dirx / diry)));
+		ray_step_x = sqrtf(1.0 + ((diry / dirx) * (diry / dirx)));
+		ray_step_y = sqrtf(1.0 + ((dirx / diry) * (dirx / diry)));
 		raystart_x = data->px;
 		raystart_y = data->py;
 		raymap_x = (int)data->px;
@@ -267,11 +267,11 @@ int	key_hook(int keycode, t_data *data)
 		end(data);
 	if (keycode == 0)
 		{ 
-				data->py+=data->pdy * 0.4 ; data->px-=data->pdx * 0.4 ;
+				data->px+=data->pdy * 0.4 ; data->py-=data->pdx * 0.4 ;
 		}
 	if (keycode == 2)
 		{ 
-				data->py-=data->pdy * 0.4 ; data->px-=data->pdx * 0.4 ;
+				data->px-=data->pdy * 0.4 ; data->py+=data->pdx * 0.4 ;
 		}
 	if (keycode == 13)
 		{ 
@@ -320,6 +320,7 @@ int main(void)
 	data->pdx = cos(degToRad(data->pa));
 	data->pdy = -sin(degToRad(data->pa));
 	data->win = mlx_new_window(data->mlx, 1920, 1080, "raycast");
+	launch(data);
 	mlx_do_key_autorepeaton(data->mlx);
 	mlx_hook(data->win, 2, 1L << 0, key_hook, data);
 	mlx_hook(data->win, 17, 1L << 5, end, data);
