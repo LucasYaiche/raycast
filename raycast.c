@@ -6,7 +6,7 @@
 /*   By: lyaiche <lyaiche@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 16:00:08 by lyaiche           #+#    #+#             */
-/*   Updated: 2022/06/09 16:43:49 by lyaiche          ###   ########.fr       */
+/*   Updated: 2022/06/09 17:06:54 by lyaiche          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,7 +230,7 @@ void	draw3drays(t_data *data)
 			while(i < 1080)
 				put_pixel(r, i++, 0x5b5b5b, data);
 		}
-		if (side && cos(degToRad(ra)) > 0.0)
+		if (side && cos(degToRad(ra + 90.0)) > 0.0)
 		{
 			// printf("1\n");
 			vertline(r, side, data, &data->west);
@@ -240,7 +240,7 @@ void	draw3drays(t_data *data)
 			// printf("2\n");
 			vertline(r, side ,data, &data->east);
 		}
-		else if (sin(degToRad(ra)) > 0.0)
+		else if (sin(degToRad(ra + 90.0)) > 0.0)
 		{
 			// printf("3\n");
 			vertline(r, side, data, &data->south);
@@ -340,13 +340,13 @@ int main(void)
 	height = 1080;
 	data->pdx = cos(degToRad(data->pa));
 	data->pdy = -sin(degToRad(data->pa));
-	data->north.img = mlx_xpm_file_to_image(data->mlx, "test.xpm", &height, &width);
+	data->north.img = mlx_xpm_file_to_image(data->mlx, "forest.xpm", &height, &width);
 	data->north.addr = mlx_get_data_addr(data->north.img, &data->north.bpp, &data->north.lb, &data->north.endian);
-	data->south.img = mlx_xpm_file_to_image(data->mlx, "test.xpm", &height, &width);
+	data->south.img = mlx_xpm_file_to_image(data->mlx, "pixar.xpm", &height, &width);
 	data->south.addr = mlx_get_data_addr(data->south.img, &data->south.bpp, &data->south.lb, &data->south.endian);
-	data->west.img = mlx_xpm_file_to_image(data->mlx, "test.xpm", &height, &width);
+	data->west.img = mlx_xpm_file_to_image(data->mlx, "disney.xpm", &height, &width);
 	data->west.addr = mlx_get_data_addr(data->west.img, &data->west.bpp, &data->west.lb, &data->west.endian);
-	data->east.img = mlx_xpm_file_to_image(data->mlx, "test.xpm", &height, &width);
+	data->east.img = mlx_xpm_file_to_image(data->mlx, "dreamworks.xpm", &height, &width);
 	data->east.addr = mlx_get_data_addr(data->east.img, &data->east.bpp, &data->east.lb, &data->east.endian);
 	data->win = mlx_new_window(data->mlx, 1920, 1080, "raycast");
 	launch(data);
